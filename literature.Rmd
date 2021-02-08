@@ -1,0 +1,50 @@
+---
+title: "Literature Review"
+author: "Danielle"
+date: "12/30/2020"
+output: pdf_document
+---
+
+## Avalanche fatalities in the US: Preparedness among backcountry skier, sidecountry, and snowmobile deaths 
+
+### Introduction
+
+Backcountry winter recreation including backcountry skiing and snowboarding, and the use of motorized vehicles, such as snowmobiles, have increased dramatically in recent years. Throughout the past decade there has been an increase in snowmobile related avalanche deaths. Of all avalanche fatalities, snowmobiles are now the largest group making up 23%, with backcountry skiers making up 22%. Previously skiers composed the largest group but the recent increase in snowmobile related fatalities has been observed in both the US and Canada. The proportion of snowmobile deaths has increased 7% per decade in addition to snowboarders at 2% per decade. Potential causes of the increase include newer snowmobiles being more powerful which has allowed for “high pointing” or “high marking” which can release an avalanche (Jekrich et al., 2016).
+
+Sidecountry is another category of increasing popularity among outdoor recreationists. Sidecountry is defined as the area adjacent to but out of bounds of winter resorts, which is accessed from a resort by a paying customer. Sidecountry is technically a part of the backcountry, which can be legal depending on the resort’s regulations. This can provide skiers with a backcountry experience with less effort, however it can create a false sense of security. Since skiers begin in bounds, it can be associated with the safety of the ski resort and a quick response by local ski patrol, when in reality, there can be extreme hazards such as avalanche zones, unmarked obstacles, and cliffs (Van Tilburg, 2010).
+Although backcountry use has increased, the number of avalanche deaths has remained relatively steady at an average of 27 deaths per year, suggesting avalanche training and education could be lowering fatalities. The average age of death between 1950 and 2018 was 31 with a range of 6 to 68 years old; between 1951 and 2013 86% of fatalities were men (Jekich et al., 2016; Peitzsh et al., 2020). The age of avalanche victims has increased in the past 50 years, suggesting victims are potentially becoming older and more experienced (Peitzsh et al., 2020).
+
+
+In order to prevent avalanche related fatalities, education and preparedness can help to reduce accidents and burials. To lower the risk of morbidity and mortality, avalanche safety gear can be used to assist in the case of a burial. Beacons (transceivers), probes, and shovels are considered standard avalanche safety equipment that should be carried by all members of a group (Nichols et al., 2018). In victims who were completely buried, beacons have been shown to reduce burial time and mortality significantly (Brugger et al., 2007). In addition, other equipment including airbags and the AvaLung can used to reduce mortality and delay asphyxiation (Brugger et al., 2007; Nichols et al., 2018). Group size is also an important aspect of avalanche rescue. Studies have shown an increased avalanche risk in groups of 4 or more and lower risk in groups of 2 or those traveling alone. However, in terms of rescue, travelling alone is against recommendations due to the risk of no available rescuers (Zweifel et al., 2016). 
+
+
+Avalanche education must be targeted to specific groups of backcountry users due to the differences in risk and behavior. Most avalanche education is targeted towards skiers, which uses different travel techniques, rescue methods, and snow stability evaluation compared to snowmobiles (Jekich et al., 2016). This suggests that the increase in snowmobile fatalities could be due to a lack of specific education and preparedness. 
+In a study surveying backcountry users in Utah, significant differences were found in the percentage who carried beacons, shovels, probes, and Avalungs, and those who took an avalanche education course among different user types. Backcountry skiers were found to have the highest level of avalanched preparedness, while snowmobiles were relatively less prepared, and out of bounds skiers were the least prepared (Silverton et al., 2007). There are currently no studies examining these traits among fatalities to determine trends among fatal avalanche incidents. The aim of this study is to determine if a difference in avalanche education and preparedness exists amongst different types of backcountry users and how it could be contributing to avalanche fatalities in the US. 
+
+### Methods
+
+Data was obtained through the Colorado Avalanche Information Center (CAIC) avalanche fatality reports for 10 seasons, from 2009-2010 through the 2018-2019 season. In addition, reports from individual US Forest Service avalanche center websites were used to supplement the CAIC reports. Victims were divided into three categories: sidecountry, ski/snowboard, and snowmobile/snowbike. Victims who began their trip in bounds of a resort and then exited the resort into the backcountry were included in the “sidecountry” category. Those who were skiing or snowboarding in the backcountry for the entirety of their trip were included in the “ski/snowboard” category. Those using snowmobiles and or motorized snow bikes were included in the “snowmobile/snowbike” category. All other avalanche fatalities that did not fall into these three groups, including inbounds, snowshoers, hikers, climbers, highway control, and roof avalanches were all excluded from the study. 
+
+Each fatality report was read and the following information was documented: date, method of travel, group size, number of deaths, sex, age, state, location, number of group members carrying a beacon, shovel, probe, airbag, or AvaLung, and the number of group members who had taken an avalanche education course. Several reports documented victims with beacons that were turned off; these were counted as having no beacon. Equipment that was reported in snowmobiles, rather than on a person, was also not counted due to the equipment often being unavailable to the rescuer. When all members of a group carried the equipment it was listed as “all members of group,” when some but not all carried the equipment it was listed as “some members,” and when no member carried the equipment it was listed as “none.” All data that was not mentioned in the report was listed as unknown. Solo travelers included those with a group size of one. In cases where groups split up, only the immediate group was counted as those with the victim at the time of the accident. In addition, when other parties were nearby or witnessed the accident and came to assist, they were not counted. Minimum safety practices was defined by all members of the group carrying a beacon, shovel, probe, and a group size > 1, allowing for people to rescue. If they did not meet one or more of those requirements it was counted as a “no” and if data was missing but had nothing to state it wasn’t meeting requirements it was “unknown.” Mention of any kind of avalanche education course in the report was included as having avalanche education. 
+
+The characteristics of each avalanche were documented including the type of avalanche, size (relative to path and destructive force), elevation, angle of slope where avalanche released, aspect, and avalanche forecast for that day. For angles and elevations given as a range the average was used. When multiple forecast levels were reported for different aspects and elevations, the most severe one was recorded. Accident sites that did not fall within an avalanche advisory area or were outside of the dates of advisories, such as early and late season, were recorded as unknown. Although some reports listed the forecast of the nearest avalanche center, this was not recorded as the accident site did not fall within the boundaries of those reports. Features of the rescue recorded included depth of burial and time buried. If a range was reported for the depth of burial the average was used. Victims who were stated to have not been buried, and likely died of trauma related injuries, were documented as so with no burial depth. The time buried was estimated based on the times given in the reports either by members of the group or by rescuers. 
+
+[data analysis methods]
+
+### References
+
+Brugger H, Etter HJ, Zweifel B, et al. The impact of avalanche rescue devices on survival. Resuscitation. 2007;75(3):476-483. doi:10.1016/j.resuscitation.2007.06.002
+
+Jekich BM, Drake BD, Nacht JY, Nichols A, Ginde AA, Davis CB. Avalanche Fatalities in the United States: A Change in Demographics. Wilderness Environ Med. 2016;27(1):46-52. doi:10.1016/j.wem.2015.11.004
+
+Nichols TB, Hawley AC, Smith WR, Wheeler AR, Mcintosh SE. Avalanche Safety Practices Among Backcountry Skiers and Snowboarders in Jackson Hole in 2016. Wilderness Environ Med. 2018;29(4): 493-498. doi:10.1016/j.wem.2018.05.004
+
+Peitzsch E, Boilen S, Logan S, Birkeland K, Greene E. Research note: How old are the people who die in avalanches? A look into the ages of avalanche victims in the United States (1950–2018). Journal of Outdoor Recreation and Tourism. 2020;29:100255. doi:10.1016/j.jort.2019.100255
+
+Silverton NA, Mcintosh SE, Kim HS. Avalanche Safety Practices in Utah. Wilderness Environ Med. 2007;18(4):264-270. doi:10.1580/06-weme-or-049r2.1
+
+Van Tilburg C. Sidecountry Rescue—Who Should Respond to Ski Resort Out-of-Bounds Rescues? Wilderness Environ Med. 2010;21(2):100-102. doi:10.1016/j.wem.2009.12.009
+
+Zweifel B, Procter E, Techel F, Strapazzon G, Boutellier R. Risk of Avalanche Involvement in Winter Backcountry Recreation: The Advantage of Small Groups. Wilderness Environ Med. 2016;27(2):203-210. doi:10.1016/j.wem.2015.12.001
+
+

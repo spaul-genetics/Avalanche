@@ -1,0 +1,337 @@
+---
+title: "Avalanche"
+author: "Subrata Paul"
+date: "1/23/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
+library(xtable)
+options(xtable.comment = F)
+```
+
+```{r message=F, warning=F}
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+dat = readxl::read_excel('./data/Avalanche_data_raw.xlsx', sheet = 1, na = 'NR')
+
+dat$Shovel = dplyr::recode(dat$Shovel,None = 0, Some = 1, All = 2)
+dat$Beacon = dplyr::recode(dat$Beacon,None = 0, Some = 1, All = 2)
+dat$Probe = dplyr::recode(dat$Probe,None = 0, Some = 1, All = 2)
+```
+
+## Preparedness 
+
+`Shovel`, `Beacon` and `Probe` are coded as ordinal variables. The variables are coded as
+
+| None | 0 |
+|---|---|
+|Some | 1|
+|All | 2|
+
+Missing values for these variables are imputed to be the mean of the observations within corresponding Tourer category. 
+
+```{r}
+impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+
+dat = dat %>%
+  group_by(Tourer) %>%
+  mutate(
+    Shovel = impute.mean(Shovel),
+    Beacon = impute.mean(Beacon),
+    Probe = impute.mean(Probe),
+    Total_in_party = impute.mean(as.numeric(Total_in_party))
+  )
+```
+
+#### Preparedness score 1
+
+We define preparedness as the sum of three variables `Shovel`, `Beacon`, and `Probe`. Comparison in preparedness in three Tourer category is given in the following figure. 
+
+
+```{r}
+dat = dat%>%
+  rowwise()%>%mutate(Preparedness1 = sum(c(Shovel, Beacon, Probe), na.rm = T))
+
+
+
+ggplot(data = dat, aes(x = Tourer, y = Preparedness1, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.08, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+```
+
+#### Observations:
+
+1. Ski/Snowboarders are one an aveerage more prepared other than few exception. 
+2. Preparedness of people in sidecountry group are evenly distributed meaning that there are people who are well prepared, somewhat prepared and not-prepared.
+3. Most of the people were somewhat prepared on the Snowmobile group. 
+
+### Preparedness 2
+
+Number of people in a group also contributes to preparedness. We can also define preparedness as the product of `Shovel` + `Beacon` + `Probe` and number of people in the group. For example, if a group have three persons, all of them took shovel, some of them took probe and none of them took beacon the group will have $3\times (2 + 1 + 0)=9$ in prepardness score. Comparison of the groups in this scoring is given below.
+
+
+
+```{r}
+dat = dat%>%
+  rowwise()%>%mutate(Preparedness2 = sum(c(Shovel, Beacon, Probe), na.rm = T)* Total_in_party)
+
+ggplot(data = dat, aes(x = Tourer, y = Preparedness2, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+```
+
+### Preparedness 3
+
+A potential problem in this scoring is that it is influenced by the size of the groups. We can overcome this problem converting the party size as 
+
+|1 | 1|
+|---|---|
+|2-4|2|
+|>4|3|
+
+
+```{r}
+dat$Total_in_party_cat = cut(dat$Total_in_party, breaks = c(-Inf,1,4,Inf),left = F, right = T)
+dat = dat%>%
+  rowwise()%>%mutate(Preparedness3 = sum(c(Shovel, Beacon, Probe), na.rm = T)* as.numeric(Total_in_party_cat))
+
+ggplot(data = dat, aes(x = Tourer, y = Preparedness3, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+```
+
+### Preparedness 4
+
+```{r}
+dat$Total_in_party_cat_bin = cut(dat$Total_in_party, breaks = c(-Inf,1,Inf),left = F, right = T)
+dat = dat%>%
+  rowwise()%>%mutate(Preparedness4 = sum(c(Shovel, Beacon, Probe), na.rm = T)* as.numeric(Total_in_party_cat_bin))
+
+ggplot(data = dat, aes(x = Tourer, y = Preparedness4, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+```
+
+## Analysis of variance
+
+
+### Bartlett test homogeneity of variance
+
+```{r results='asis'}
+bartlett.test(Preparedness1~Tourer, data = dat)
+bartlett.test(Preparedness2~Tourer, data = dat)
+bartlett.test(Preparedness3~Tourer, data = dat)
+bartlett.test(Preparedness4~Tourer, data = dat)
+```
+
+### Fligner-Killeen's test
+
+```{r}
+fligner.test(Preparedness1~Tourer, data = dat)
+fligner.test(Preparedness2~Tourer, data = dat)
+fligner.test(Preparedness3~Tourer, data = dat)
+fligner.test(Preparedness4~Tourer, data = dat)
+```
+### Preparedness 1
+
+```{r}
+prep.aov = aov(Preparedness1 ~ Tourer, data = dat)
+xtable(summary(prep.aov), caption = 'One-way anova of Preparedness1 against Tourer')
+```
+
+The preparedness is statistically different in the three categories. 
+
+### Preparedness 2
+
+```{r}
+prep.aov = aov(Preparedness2 ~ Tourer, data = dat)
+xtable(summary(prep.aov), caption = 'One-way anova of Preparedness2 against Tourer')
+```
+
+We don't have enough evidence to say that the preparedness is statistically different among the three groups. 
+
+
+### Preparedness 3
+
+```{r}
+prep.aov = aov(Preparedness3 ~ Tourer, data = dat)
+xtable(summary(prep.aov), caption = 'One-way anova of Preparedness3 against Tourer')
+```
+Preparedness is statistically different in three groups. 
+
+### Preparedness 4
+
+```{r}
+prep.aov = aov(Preparedness4 ~ Tourer, data = dat)
+xtable(summary(prep.aov), caption = 'One-way anova of Preparedness4 against Tourer')
+```
+
+
+### Tukey HSD test
+
+```{r}
+prep.aov = aov(Preparedness3 ~ Tourer, data = dat)
+xtable(TukeyHSD(prep.aov)$Tourer)
+```
+The above table gives 95\% confidence interval of difference in mean between groups. 
+
+
+
+### Welch one-way test
+
+
+```{r}
+oneway.test(Preparedness1~Tourer, data = dat)
+oneway.test(Preparedness2~Tourer, data = dat)
+oneway.test(Preparedness3~Tourer, data = dat)
+oneway.test(Preparedness4~Tourer, data = dat)
+```
+### Overall comments on preparedness
+
+Preparedness score 2 is heavily influenced by the party size and is unreliable. The Bertlett test for homogeneity of variance concludes that the preparedness scaore 1 and 2 does not satisfy the homogeneity of variance condition (p-vlaues: 0.0007934 and $1.844\times 10^{-9}$, respectively). The other two scores (Preparedness score 3 and 4) came to the same conclusion that preparedness in the tourer groups are significantly different from each other based on the results of one-way analysis of variance. 
+
+Since the preparedness score does not follow a normal distribution, a Fligner-Killeen's test is more appropriate. According to the test, the most statistically appropriate score is the Preparedness score 3. Using the preparedness score the there is statistically significant difference (F = 11.56, p-value = $1.76\times 10^{-5}$) in preparedness between the tourer groups. 
+
+For the post-hoc analysis of Tukey HSD test on Preparedness3. According to the test, significant differences are found between Ski/Snowboard - Sidecountry (p-value = 0.0000105)  and Snowmobile - Sidecountry (p-value = 0.00723) group. We don't have enough evidence to claim that preparedness is significantly difference between the Snowmobile/Snowbike - Ski/Snowboard groups (p-value = 0.064). 
+
+A more robust test for possible violation from normality and equality of variance is the Welch one-way test. The Welch one-way test also confirms the above result. 
+
+
+```{r}
+ggplot(data = dat, aes(x = Tourer, y = Preparedness1, color = Total_in_party_cat_bin))+
+  geom_boxplot()+
+  labs(color = 'Party Size')+
+  scale_color_discrete(name = 'Party Size', labels = c('Solo','Group'))
+  
+```
+
+```{r}
+dat$Total_in_party_cat_bin= dplyr::recode(dat$Total_in_party_cat_bin, `(-Inf,1]`='Solo', `(1, Inf]`='Group')
+
+xtable(dat%>%group_by(Tourer, Total_in_party_cat_bin)%>%
+  summarise(count = n(), mean = mean(Preparedness1, na.rm = T), sd = sd(Preparedness1, na.rm = T)))
+```
+
+Test for homogeneity of variance
+
+```{r}
+car::leveneTest(Preparedness1~Tourer * Total_in_party_cat_bin, data = dat)
+```
+So, the homogeneity assumption is violated. Also, the design is unbalanced since the number of observations vary too much. The ANOVA with Type-III sum of squares is prefered in such cases. 
+```{r}
+aov2<-aov(Preparedness1~Tourer * Total_in_party_cat_bin, data = dat)
+car::Anova(aov2, type ='III')
+```
+
+The preparedness score 1 is significantly different between the three groups of tourers (F = 43.45, p-value = $3.83\times 10^{-10}$). The evidence at hand does not show that the preparedness differes based on whether the tourer is alone or in a group. 
+
+The two-way anova using the Preparedness1 and binary Party Size as independent variables concludes the same as the one way anova about the preparedness1. We can conclude from here that the preparedness does not depends on the party size and neither there are interaction effect of Trouer group and party size on preparedness. 
+
+# Analysis on Burial_time
+
+```{r}
+boxplot(dat$Burial_time)
+```
+
+Some outlines are visible in the data. As we discussed, the insanely high burial time indicate that the body was found long after the incidence due to weather condition or some other reason. The inter-quartile range of burial time is 
+
+```{r}
+(irq = IQR(dat$Burial_time, na.rm = T))
+(sum(!is.na(dat$Burial_time)))
+(sum(dat$Burial_time>208, na.rm = T))
+```
+
+There are 162 observation where Burial time is available among them 41 is above the inter-quartile range. Replacing them by the inter-quartile range makes the burial time a bimodal and analysis of a bimodal variable is not straight forward. 
+
+We log transform burial time and see the boxplot 
+
+```{r}
+boxplot(log(dat$Burial_time))
+
+```
+We see only a few outliers here. 
+```{r}
+sum(log(dat$Burial_time)>10,na.rm = T)
+```
+
+Removing 6 observations. There are 19 more observations that has burial time 0. I don't understand this and removed them from further analysis as well. 
+
+```{r}
+dat = dat%>%mutate(Log_Burial_time = log(Burial_time))
+dat1 = dat[dat$Log_Burial_time>0,]
+dat1 = dat1[dat1$Log_Burial_time < 10,]
+```
+
+
+```{r}
+boxplot(dat1$Log_Burial_time)
+```
+
+### Is burial time significantly different among tourer groups?
+
+```{r}
+burial.aov1<-aov(Log_Burial_time ~ Tourer, data = dat1)
+summary(burial.aov1)
+```
+Only a slide evidence (F = 3.24, p-value = 0.042) that the burial time is related to the tourer group. 
+
+```{r}
+ggplot(data = dat, aes(x = Tourer, y = Log_Burial_time))+
+  geom_boxplot()
+```
+The boxplot also confirms the ANOVA result. 
+
+## Looking at burial time against other variables
+
+
+```{r fig.height=20, fig.width=15}
+plot_dat<-dat1%>%select(Log_Burial_time, Tourer, Gender, Total_in_party_cat_bin, Preparedness1, Preparedness3, Avalanche_Type, Avalanche_Size_RP, Avalanche_Size_DF, Avalanche_Forcast, Elevation, Angle, Aspect)
+plot_dat = plot_dat[plot_dat$Log_Burial_time<1000,]
+library(gridExtra)
+p<-list()
+for(indep.var in names(plot_dat)[-1]){
+  stat_box_data<-function(y){
+    return(
+      data.frame(
+        y = 300,
+        label = paste0('n = ', sum(!is.na(y)), '\n',
+                       'mu = ', round(mean(y, na.rm = T),2), '\n',
+                       )
+      )
+    )
+  }
+  if(class(plot_dat[[indep.var]])=='numeric'){
+    p[[indep.var]]<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
+                         aes_string(x = indep.var, y = 'Log_Burial_time'))+
+                    geom_point()+geom_smooth(method = 'lm')+
+                    theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))
+  }else{
+      p[[indep.var]]<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
+                         aes_string(x = indep.var, y = 'Log_Burial_time'))+
+                  geom_boxplot()+
+                  stat_summary(fun.data = stat_box_data, geom = 'text', hjust = 0.5, vjust = 0.9)+
+                    theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))
+    
+  }
+}
+do.call(grid.arrange, p)
+```
+
+### Observations:
+
+1. Burial time does not differ based on Tourer group
+2. Burial time looks different for male and female
+3. Burial time for single person looks higher than group
+4. Burial time decrease significantly with increase of preparedness
+5. Can't comment on Avalanche properties without further investigation
+6. Does not looks like Elevation and Angle are associated with burial time. 
+
+
+
+
+## Comments
+
+1. Based on the results I would inclined toward Preparedness score 3 and one-way anova result and present the two-way anova result as sanity check. 
+2. Analysis on burial time is still incomlete. I would spend couple of hours next weekend to do something more. 
+3. Please send me specifict questions (I think we have already discussed some, please remind me). Specific questions will be very helpful for me when I analyze the data. 
+
+
