@@ -1,0 +1,27 @@
+---
+title: "Data_Summary"
+author: "Subrata Paul"
+date: "1/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(tidyverse, quietly = T)
+knitr::opts_chunk$set(echo = F)
+```
+
+```{r}
+
+dat = readxl::read_excel('./data/Avalanche_Data_Formatted.xlsx', sheet = 2, na = 'NR', .name_repair = 'universal')
+```
+
+```{r}
+dat %>% group_by(Category) %>% summarise(mean = mean(Age, na.rm = T), sd = sd(Age, na.rm = T))
+```
+
+```{r}
+dat1 = dat[dat$Burial.time..minutes.<50000,]
+plot(dat1$Burial.time..minutes., dat1$Elevation)
+abline(lm(dat1$Elevation ~ dat1$Burial.time..minutes.))
+```
