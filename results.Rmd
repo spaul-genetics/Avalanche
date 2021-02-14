@@ -2,7 +2,9 @@
 title: "Avalanche"
 author: "Subrata Paul"
 date: "1/23/2021"
-output: pdf_document
+output:
+  pdf_document:
+    extra_dependencies: ["xcolor"]
 ---
 
 ```{r setup, include=FALSE}
@@ -91,7 +93,7 @@ A potential problem in this scoring is that it is influenced by the size of the 
 |>4|3|
 
 
-```{r}
+```{r results='asis'}
 dat$Total_in_party_cat = cut(dat$Total_in_party, breaks = c(-Inf,1,4,Inf),left = F, right = T)
 dat = dat%>%
   rowwise()%>%mutate(Preparedness3 = sum(c(Shovel, Beacon, Probe), na.rm = T)* as.numeric(Total_in_party_cat))
@@ -133,7 +135,7 @@ fligner.test(Preparedness4~Tourer, data = dat)
 ```
 ### Preparedness 1
 
-```{r}
+```{r results='asis'}
 prep.aov = aov(Preparedness1 ~ Tourer, data = dat)
 xtable(summary(prep.aov), caption = 'One-way anova of Preparedness1 against Tourer')
 ```
@@ -142,7 +144,7 @@ The preparedness is statistically different in the three categories.
 
 ### Preparedness 2
 
-```{r}
+```{r results='asis'}
 prep.aov = aov(Preparedness2 ~ Tourer, data = dat)
 xtable(summary(prep.aov), caption = 'One-way anova of Preparedness2 against Tourer')
 ```
@@ -152,7 +154,7 @@ We don't have enough evidence to say that the preparedness is statistically diff
 
 ### Preparedness 3
 
-```{r}
+```{r results='asis'}
 prep.aov = aov(Preparedness3 ~ Tourer, data = dat)
 xtable(summary(prep.aov), caption = 'One-way anova of Preparedness3 against Tourer')
 ```
@@ -160,7 +162,7 @@ Preparedness is statistically different in three groups.
 
 ### Preparedness 4
 
-```{r}
+```{r results='asis'}
 prep.aov = aov(Preparedness4 ~ Tourer, data = dat)
 xtable(summary(prep.aov), caption = 'One-way anova of Preparedness4 against Tourer')
 ```
@@ -168,7 +170,7 @@ xtable(summary(prep.aov), caption = 'One-way anova of Preparedness4 against Tour
 
 ### Tukey HSD test
 
-```{r}
+```{r results='asis'}
 prep.aov = aov(Preparedness3 ~ Tourer, data = dat)
 xtable(TukeyHSD(prep.aov)$Tourer)
 ```
@@ -204,7 +206,7 @@ ggplot(data = dat, aes(x = Tourer, y = Preparedness1, color = Total_in_party_cat
   
 ```
 
-```{r}
+```{r results='asis'}
 dat$Total_in_party_cat_bin= dplyr::recode(dat$Total_in_party_cat_bin, `(-Inf,1]`='Solo', `(1, Inf]`='Group')
 
 xtable(dat%>%group_by(Tourer, Total_in_party_cat_bin)%>%
@@ -325,13 +327,150 @@ do.call(grid.arrange, p)
 5. Can't comment on Avalanche properties without further investigation
 6. Does not looks like Elevation and Angle are associated with burial time. 
 
+## Additional analysis based on comments on Jan 7th
+
+## Analysis 1: Burial time $<$ 15 vs $\geq 15$
+Comment: The only other metric for burial time that would be helpful is the number of burials that were 15 min or less (suggesting that the group was more prepared). So if there is a way to say a certain group had a statistical difference in the percentage that were 15 min or less, not including the people who weren't buried. 
+
+\textcolor{blue}{
+We perform a chi-square test of independence between the Trourer group and whether the burial time was less than or more than 15 minutes. Based on the chi-square test ($\chi^2_{df = 2}=10.82$, p-value = 0.004), whether burial time is less or more than 15 depends on the tourer group. 
+}
 
 
+```{r results='asis'}
+dat$Burial_time_15<-factor(as.numeric(dat$Burial_time<15), labels = c('more_than_15','less_than_15'))
+contin_table<-table(dat$Burial_time_15, dat$Tourer)
+xtable(contin_table)
+bar_data <-data.frame(contin_table)
+get_prop<-function(tourer){
+  bar_data$Freq[bar_data$Var2==tourer & bar_data$Var1 =='less_than_15']/
+    bar_data$Freq[bar_data$Var2==tourer & bar_data$Var1 =='more_than_15']
+}
+tourer = unique(dat$Tourer)
+bar_data<-c(get_prop(tourer[1]), get_prop(tourer[2]),get_prop(tourer[3]))
+barplot(bar_data, names.arg = tourer)
+```
+
+```{r}
+chisq.test(table(dat$Burial_time<15, dat$Tourer))
+```
+
+### Analysis 2: 
+
+Comment: 
+The last few things I was hoping for are some of those variables looked at individually, rather than in conjunction with burial time. For example, for avalanche forecast, is there a difference in the distribution of each forecast type among the 3 groups or are there significantly more of one forecast than another. For the following variables, I am just looking at them independently. Here would be the question for each:
+
+#### 1. total in party: was the average group size for each of the three groups significantly different? Could we do one graph showing that distribution?
+
+```{r}
+oneway.test(Total_in_party ~ Tourer, data = dat)
+ggplot(data = dat, aes(x = Tourer, y = Total_in_party))+
+  geom_boxplot()
+```
+
+\textcolor{blue}{
+From the Welch one-way test and boxplot the data does not suggest significantly difference in average group size. 
+}
+
+
+
+#### 2. avalanche type: Were there more of a certain types in one group compared to another?
+```{r results='asis'}
+chisq.test(table(dat$Avalanche_Type, dat$Tourer))
+contin_table<-table(dat$Avalanche_Type, dat$Tourer)
+xtable(contin_table)
+ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+```
+
+\textcolor{blue}{
+Chi-square test of independence can not be applied to the whole table as there are many cells with 0. We can test if HS and SS are significanly different in three tourer groups
+}
+
+```{r}
+chisq.test(contin_table[c(2,4),])
+```
+
+\textcolor{blue}{
+From the chi-square test of independence, we don't have enough evidence to confirm that the type of avalanche varies between the three winter activity groups (locations).
+}
+
+
+#### 3. size (R). Is the average size and/or distribution different between the three groups?
+
+```{r results='asis'}
+chisq.test(table(dat$Avalanche_Size_RP, dat$Tourer))
+contin_table<-table(dat$Avalanche_Size_RP, dat$Tourer)
+xtable(contin_table)
+ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+```
+
+\textcolor{blue}{
+The chi-square test confirms that the avalanche type varies between the winter activity location. We remove R3.5 and R5 from the analysis of chi-square test of independence for lack of observations and re-run the test. 
+}
+
+```{r results='asis'}
+kept = !dat$Avalanche_Size_RP%in%c('R3.5','R5')
+chisq.test(table(dat$Avalanche_Size_RP[kept], dat$Tourer[kept]))
+contin_table<-table(dat$Avalanche_Size_RP[kept], dat$Tourer[kept])
+xtable(contin_table)
+ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+```
+
+\textcolor{blue}{
+The Ski/Snowboard have much higher number of R1 and R3 avalanche compared to the other two. 
+}
+
+4. size (D)- you can include 2 and 2.5 in one category, 3 and 3.5 together, etc. if that is easier. Same here, is the size/distrubtion different among the groups. If we can't find any differences just having a box plot for these two size ones would be fine to show the distribution. 
+
+```{r results='asis'}
+x = dat$Tourer
+y = dat$Avalanche_Size_DF
+y[y=='D2.5']<-'D2'
+y[y=='D3.5']<-'D3'
+chisq.test(table(y,x))
+contin_table<-table(y,x)
+xtable(contin_table)
+ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())
+```
+
+\textcolor{blue}{
+From the chi-square test and the bar plot Avalance size DF is not significantly differen between tourer group. 
+}
+
+5. burial depth: are the average burial depths different among the three groups?
+
+```{r}
+dat$Burial_Depth<-as.numeric(dat$Burial_Depth)
+oneway.test(Burial_Depth ~ Tourer, data = dat)
+ggplot(data = dat, aes(x = Tourer, y = Burial_Depth))+
+  geom_boxplot()
+```
+
+
+\textcolor{blue}{
+Based on the Welch one-way test, burial depth is significantly different in three tourer groups. From the box plot it looks like that the Sidecountry, ski/Snowboard are pretty similar and the difference is between these and Snowmobile/Snowbike.
+}
+
+#### 6. forecast: is there a difference in distribution of the forecast or which ones are most common among the 3 groups?
+
+```{r results='asis'}
+chisq.test(table(dat$Avalanche_Forcast, dat$Tourer))
+contin_table<-table(dat$Avalanche_Forcast, dat$Tourer)
+xtable(contin_table)
+ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+
+```
+
+\textcolor{blue}{
+Does not look like there are statistical  differences
+}
 
 ## Comments
 
 1. Based on the results I would inclined toward Preparedness score 3 and one-way anova result and present the two-way anova result as sanity check. 
 2. Analysis on burial time is still incomlete. I would spend couple of hours next weekend to do something more. 
 3. Please send me specifict questions (I think we have already discussed some, please remind me). Specific questions will be very helpful for me when I analyze the data. 
+
+
 
 
