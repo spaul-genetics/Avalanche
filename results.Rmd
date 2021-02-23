@@ -278,7 +278,8 @@ Only a slide evidence (F = 3.24, p-value = 0.042) that the burial time is relate
 
 ```{r}
 ggplot(data = dat, aes(x = Tourer, y = Log_Burial_time))+
-  geom_boxplot()
+  geom_boxplot()+
+  ylab(paste0(expression(log),' (Burial Time)'))
 ```
 The boxplot also confirms the ANOVA result. 
 
@@ -286,11 +287,13 @@ The boxplot also confirms the ANOVA result.
 
 
 ```{r fig.height=20, fig.width=15}
-plot_dat<-dat1%>%select(Log_Burial_time, Tourer, Gender, Total_in_party_cat_bin, Preparedness1, Preparedness3, Avalanche_Type, Avalanche_Size_RP, Avalanche_Size_DF, Avalanche_Forcast, Elevation, Angle, Aspect)
+plot_dat<-dat1%>%select(Log_Burial_time, Tourer, Gender, Total_in_party_cat_bin, Preparedness1,Preparedness2, Preparedness3,Preparedness4, Avalanche_Type, Avalanche_Size_RP, Avalanche_Size_DF, Avalanche_Forcast, Elevation, Angle, Aspect)
 plot_dat = plot_dat[plot_dat$Log_Burial_time<1000,]
+
+
+
 library(gridExtra)
-p<-list()
-for(indep.var in names(plot_dat)[-1]){
+get_plot<-function(indep.var){
   stat_box_data<-function(y){
     return(
       data.frame(
@@ -302,20 +305,37 @@ for(indep.var in names(plot_dat)[-1]){
     )
   }
   if(class(plot_dat[[indep.var]])=='numeric'){
-    p[[indep.var]]<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
+    plt<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
                          aes_string(x = indep.var, y = 'Log_Burial_time'))+
                     geom_point()+geom_smooth(method = 'lm')+
-                    theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))
+                    theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))+
+  ylab(paste0(expression(log),' (Burial Time)'))
   }else{
-      p[[indep.var]]<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
+      plt<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
                          aes_string(x = indep.var, y = 'Log_Burial_time'))+
                   geom_boxplot()+
                   stat_summary(fun.data = stat_box_data, geom = 'text', hjust = 0.5, vjust = 0.9)+
-                    theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))
+                    theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))+
+  ylab(paste0(expression(log),' (Burial Time)'))
     
   }
+  x_label = case_when(indep.var == "Avalanche_Size_RP" ~ 'Avalanche Size (Relative)',
+                      indep.var == "Avalanche_Size_DF" ~ 'Avalanche Size (Destructive)',
+                      TRUE ~ indep.var
+  )
+  plt = plt + xlab(x_label)
+
+return(plt)
+}
+
+p<-list()
+for(indep.var in names(plot_dat)[-1]){
+  p[[indep.var]] = get_plot(indep.var)
 }
 do.call(grid.arrange, p)
+get_plot('Preparedness4')
+get_plot('Avalanche_Size_RP')
+get_plot('Avalanche_Size_DF')
 ```
 
 ### Observations:
@@ -348,7 +368,7 @@ get_prop<-function(tourer){
 }
 tourer = unique(dat$Tourer)
 bar_data<-c(get_prop(tourer[1]), get_prop(tourer[2]),get_prop(tourer[3]))
-barplot(bar_data, names.arg = tourer)
+barplot(bar_data, names.arg = tourer, ylab = 'Burial time <15/>15 min', xlab = 'Tourer')
 ```
 
 ```{r}
@@ -363,9 +383,15 @@ The last few things I was hoping for are some of those variables looked at indiv
 #### 1. total in party: was the average group size for each of the three groups significantly different? Could we do one graph showing that distribution?
 
 ```{r}
+n_fun <-function(x){
+  return(data.frame(y = 12, label = paste0('Mean = ', round(mean(x),2))))
+}
+
 oneway.test(Total_in_party ~ Tourer, data = dat)
 ggplot(data = dat, aes(x = Tourer, y = Total_in_party))+
-  geom_boxplot()
+  geom_boxplot()+ylab('Total in party')+
+  stat_summary(fun.y = mean, geom = 'point', shape = 8, size = 4)+
+  stat_summary(fun.data = n_fun, geom = 'text')
 ```
 
 \textcolor{blue}{
@@ -401,7 +427,8 @@ From the chi-square test of independence, we don't have enough evidence to confi
 chisq.test(table(dat$Avalanche_Size_RP, dat$Tourer))
 contin_table<-table(dat$Avalanche_Size_RP, dat$Tourer)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
+  labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer' )
 ```
 
 \textcolor{blue}{
@@ -409,11 +436,20 @@ The chi-square test confirms that the avalanche type varies between the winter a
 }
 
 ```{r results='asis'}
-kept = !dat$Avalanche_Size_RP%in%c('R3.5','R5')
-chisq.test(table(dat$Avalanche_Size_RP[kept], dat$Tourer[kept]))
-contin_table<-table(dat$Avalanche_Size_RP[kept], dat$Tourer[kept])
+kept = !dat$Avalanche_Size_RP%in%c('R5')
+x = dat$Tourer[kept]
+y = dat$Avalanche_Size_RP[kept]
+y[y=='R3.5']<-'R3'
+chisq.test(table(y,x))
+contin_table<-table(y,x)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())+labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer')+
+  labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer' )
+  
+
+
+
+
 ```
 
 \textcolor{blue}{
@@ -427,23 +463,45 @@ x = dat$Tourer
 y = dat$Avalanche_Size_DF
 y[y=='D2.5']<-'D2'
 y[y=='D3.5']<-'D3'
+y[y=='D1.5']<-'D1'
 chisq.test(table(y,x))
 contin_table<-table(y,x)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())
+ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())+
+  labs(x = 'Avalanche Size (Destructive)', y = 'Frequency', fill = 'Tourer' )
 ```
 
 \textcolor{blue}{
 From the chi-square test and the bar plot Avalance size DF is not significantly differen between tourer group. 
 }
 
+
+```{r results='asis'}
+kept = !dat$Avalanche_Size_RP%in%c('D1.5')
+chisq.test(table(dat$Avalanche_Size_DF[kept], dat$Tourer[kept]))
+contin_table<-table(dat$Avalanche_Size_DF[kept], dat$Tourer[kept])
+xtable(contin_table)
+ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
+  labs(x = 'Avalanche Size (Destructive)', y = 'Frequency', fill = 'Tourer' )
+```
+
+
+
 5. burial depth: are the average burial depths different among the three groups?
 
 ```{r}
+
+n_fun <-function(x){
+  return(data.frame(y = 12, label = paste0('Mean = ', round(mean(x),2))))
+}
+
+
 dat$Burial_Depth<-as.numeric(dat$Burial_Depth)
 oneway.test(Burial_Depth ~ Tourer, data = dat)
 ggplot(data = dat, aes(x = Tourer, y = Burial_Depth))+
-  geom_boxplot()
+  geom_boxplot()+
+  stat_summary(fun.y = mean, geom = 'point', shape = 8, size = 4)+
+  stat_summary(fun.data = n_fun, geom = 'text')+ylab('Burial Depth')
 ```
 
 
