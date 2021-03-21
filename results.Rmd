@@ -3,12 +3,14 @@ title: "Avalanche"
 author: "Subrata Paul"
 date: "1/23/2021"
 output:
+  word_document: default
   pdf_document:
-    extra_dependencies: ["xcolor"]
+    extra_dependencies: xcolor
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F, warning = F, message = F)
+knitr::opts_chunk$set(echo = F, warning = F, message = F, dpi = 600)
+
 library(xtable)
 options(xtable.comment = F)
 ```
@@ -59,8 +61,10 @@ dat = dat%>%
 
 
 
-ggplot(data = dat, aes(x = Tourer, y = Preparedness1, fill = Tourer))+
-  geom_violin()+geom_boxplot(width = 0.08, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+(p1 = ggplot(data = dat, aes(x = Tourer, y = Preparedness1, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.08, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2)))
+ggsave(p1, filename = './plots/figure1.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
+
 ```
 
 #### Observations:
@@ -79,8 +83,9 @@ Number of people in a group also contributes to preparedness. We can also define
 dat = dat%>%
   rowwise()%>%mutate(Preparedness2 = sum(c(Shovel, Beacon, Probe), na.rm = T)* Total_in_party)
 
-ggplot(data = dat, aes(x = Tourer, y = Preparedness2, fill = Tourer))+
-  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+(p2 = ggplot(data = dat, aes(x = Tourer, y = Preparedness2, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2)))
+ggsave(p2, filename = './plots/figure2.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 ### Preparedness 3
@@ -98,8 +103,9 @@ dat$Total_in_party_cat = cut(dat$Total_in_party, breaks = c(-Inf,1,4,Inf),left =
 dat = dat%>%
   rowwise()%>%mutate(Preparedness3 = sum(c(Shovel, Beacon, Probe), na.rm = T)* as.numeric(Total_in_party_cat))
 
-ggplot(data = dat, aes(x = Tourer, y = Preparedness3, fill = Tourer))+
-  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+(p3 = ggplot(data = dat, aes(x = Tourer, y = Preparedness3, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2)))
+ggsave(p3, filename = './plots/figure3.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 ### Preparedness 4
@@ -109,8 +115,9 @@ dat$Total_in_party_cat_bin = cut(dat$Total_in_party, breaks = c(-Inf,1,Inf),left
 dat = dat%>%
   rowwise()%>%mutate(Preparedness4 = sum(c(Shovel, Beacon, Probe), na.rm = T)* as.numeric(Total_in_party_cat_bin))
 
-ggplot(data = dat, aes(x = Tourer, y = Preparedness4, fill = Tourer))+
-  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2))
+(p4 = ggplot(data = dat, aes(x = Tourer, y = Preparedness4, fill = Tourer))+
+  geom_violin()+geom_boxplot(width = 0.1, fill = 'white')+geom_jitter(shape = 16, position = position_jitter(0.2)))
+ggsave(p4, filename = './plots/figure4.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 ## Analysis of variance
@@ -199,10 +206,11 @@ A more robust test for possible violation from normality and equality of varianc
 
 
 ```{r}
-ggplot(data = dat, aes(x = Tourer, y = Preparedness1, color = Total_in_party_cat_bin))+
+(p5 = ggplot(data = dat, aes(x = Tourer, y = Preparedness1, color = Total_in_party_cat_bin))+
   geom_boxplot()+
   labs(color = 'Party Size')+
-  scale_color_discrete(name = 'Party Size', labels = c('Solo','Group'))
+  scale_color_discrete(name = 'Party Size', labels = c('Solo','Group')))
+ggsave(p5, filename = './plots/figure5.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
   
 ```
 
@@ -277,9 +285,10 @@ summary(burial.aov1)
 Only a slide evidence (F = 3.24, p-value = 0.042) that the burial time is related to the tourer group. 
 
 ```{r}
-ggplot(data = dat, aes(x = Tourer, y = Log_Burial_time))+
+(p6 = ggplot(data = dat, aes(x = Tourer, y = Log_Burial_time))+
   geom_boxplot()+
-  ylab(paste0(expression(log),' (Burial Time)'))
+  ylab(paste0(expression(log),' (Burial Time)')))
+ggsave(p6, filename = './plots/figure6.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 The boxplot also confirms the ANOVA result. 
 
@@ -332,10 +341,16 @@ p<-list()
 for(indep.var in names(plot_dat)[-1]){
   p[[indep.var]] = get_plot(indep.var)
 }
-do.call(grid.arrange, p)
-get_plot('Preparedness4')
-get_plot('Avalanche_Size_RP')
-get_plot('Avalanche_Size_DF')
+(p7 = do.call(grid.arrange, p))
+ggsave(p7, filename = './plots/figure7.jpg', width = 20, height = 20, dpi = 600, scale = 1)
+(p8 = get_plot('Preparedness4'))
+ggsave(p8, filename = './plots/figure8.jpg', width = 20, height = 15, dpi = 600, scale = 0.6)
+(p9 = get_plot('Avalanche_Size_RP'))
+ggsave(p9, filename = './plots/figure9.jpg', width = 12, height = 8, dpi = 600, scale = 1)
+(p10 = get_plot('Avalanche_Size_DF'))
+ggsave(p10, filename = './plots/figure10.jpg', width = 12, height = 8, dpi = 600, scale = 1)
+
+
 ```
 
 ### Observations:
@@ -368,7 +383,11 @@ get_prop<-function(tourer){
 }
 tourer = unique(dat$Tourer)
 bar_data<-c(get_prop(tourer[1]), get_prop(tourer[2]),get_prop(tourer[3]))
+
 barplot(bar_data, names.arg = tourer, ylab = 'Burial time <15/>15 min', xlab = 'Tourer')
+jpeg(filename = './plots/figure11.jpg')
+barplot(bar_data, names.arg = tourer, ylab = 'Burial time <15/>15 min', xlab = 'Tourer')
+dev.off()
 ```
 
 ```{r}
@@ -388,10 +407,11 @@ n_fun <-function(x){
 }
 
 oneway.test(Total_in_party ~ Tourer, data = dat)
-ggplot(data = dat, aes(x = Tourer, y = Total_in_party))+
+(p12 = ggplot(data = dat, aes(x = Tourer, y = Total_in_party))+
   geom_boxplot()+ylab('Total in party')+
   stat_summary(fun.y = mean, geom = 'point', shape = 8, size = 4)+
-  stat_summary(fun.data = n_fun, geom = 'text')
+  stat_summary(fun.data = n_fun, geom = 'text'))
+ggsave(p12, filename = './plots/figure12.jpg', width = 12, height = 8, dpi = 600, scale = 0.6)
 ```
 
 \textcolor{blue}{
@@ -405,7 +425,9 @@ From the Welch one-way test and boxplot the data does not suggest significantly 
 chisq.test(table(dat$Avalanche_Type, dat$Tourer))
 contin_table<-table(dat$Avalanche_Type, dat$Tourer)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+(p13 = ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
+    labs(y = 'Frequency', x = 'Avalanche Type'))
+ggsave(p13, filename = './plots/figure13.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 \textcolor{blue}{
@@ -427,8 +449,9 @@ From the chi-square test of independence, we don't have enough evidence to confi
 chisq.test(table(dat$Avalanche_Size_RP, dat$Tourer))
 contin_table<-table(dat$Avalanche_Size_RP, dat$Tourer)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
-  labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer' )
+(p14 = ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
+  labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer' ))
+ggsave(p14, filename = './plots/figure14.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 \textcolor{blue}{
@@ -443,8 +466,9 @@ y[y=='R3.5']<-'R3'
 chisq.test(table(y,x))
 contin_table<-table(y,x)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())+labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer')+
-  labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer' )
+(p15 = ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())+labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer')+
+  labs(x = 'Avalanche Size (Relative)', y = 'Frequency', fill = 'Tourer' ))
+ggsave(p15, filename = './plots/figure15.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
   
 
 
@@ -467,8 +491,9 @@ y[y=='D1.5']<-'D1'
 chisq.test(table(y,x))
 contin_table<-table(y,x)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())+
-  labs(x = 'Avalanche Size (Destructive)', y = 'Frequency', fill = 'Tourer' )
+(p16 = ggplot(data = data.frame(contin_table), aes(x = y, y = Freq, fill = x))+ geom_bar(stat = 'identity',position = position_dodge())+
+  labs(x = 'Avalanche Size (Destructive)', y = 'Frequency', fill = 'Tourer' ))
+ggsave(p16, filename = './plots/figure16.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 \textcolor{blue}{
@@ -481,8 +506,9 @@ kept = !dat$Avalanche_Size_RP%in%c('D1.5')
 chisq.test(table(dat$Avalanche_Size_DF[kept], dat$Tourer[kept]))
 contin_table<-table(dat$Avalanche_Size_DF[kept], dat$Tourer[kept])
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
-  labs(x = 'Avalanche Size (Destructive)', y = 'Frequency', fill = 'Tourer' )
+(p17 = ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())+
+  labs(x = 'Avalanche Size (Destructive)', y = 'Frequency', fill = 'Tourer' ))
+ggsave(p17, filename = './plots/figure17.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 
@@ -498,10 +524,11 @@ n_fun <-function(x){
 
 dat$Burial_Depth<-as.numeric(dat$Burial_Depth)
 oneway.test(Burial_Depth ~ Tourer, data = dat)
-ggplot(data = dat, aes(x = Tourer, y = Burial_Depth))+
+(p18 = ggplot(data = dat, aes(x = Tourer, y = Burial_Depth))+
   geom_boxplot()+
   stat_summary(fun.y = mean, geom = 'point', shape = 8, size = 4)+
-  stat_summary(fun.data = n_fun, geom = 'text')+ylab('Burial Depth')
+  stat_summary(fun.data = n_fun, geom = 'text')+ylab('Burial Depth'))
+ggsave(p18, filename = './plots/figure18.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
 
@@ -515,7 +542,9 @@ Based on the Welch one-way test, burial depth is significantly different in thre
 chisq.test(table(dat$Avalanche_Forcast, dat$Tourer))
 contin_table<-table(dat$Avalanche_Forcast, dat$Tourer)
 xtable(contin_table)
-ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge())
+(p19 = ggplot(data = data.frame(contin_table), aes(x = Var1, y = Freq, fill = Var2))+ geom_bar(stat = 'identity',position = position_dodge()))
+ggsave(p19, filename = './plots/figure19.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
+  
 
 ```
 
