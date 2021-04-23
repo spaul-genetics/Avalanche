@@ -179,7 +179,7 @@ xtable(summary(prep.aov), caption = 'One-way anova of Preparedness4 against Tour
 
 ```{r results='asis'}
 prep.aov = aov(Preparedness3 ~ Tourer, data = dat)
-xtable(TukeyHSD(prep.aov)$Tourer)
+print(xtable(TukeyHSD(prep.aov)$Tourer, display = c('s','f','f','f','g')),math.style.exponents = T)
 ```
 The above table gives 95\% confidence interval of difference in mean between groups. 
 
@@ -320,7 +320,9 @@ get_plot<-function(indep.var){
                     theme(axis.text.x = element_text(angle = 45), text = element_text(size = 20))+
   ylab(paste0(expression(log),' (Burial Time)'))
   }else{
-      plt<-ggplot(data = plot_dat%>%select(Log_Burial_time, indep.var), 
+      plot_dat1 = plot_dat%>%select(Log_Burial_time, indep.var)
+      plot_dat1 = plot_dat1[!is.na(plot_dat[[indep.var]]),]
+      plt<-ggplot(data = plot_dat1, 
                          aes_string(x = indep.var, y = 'Log_Burial_time'))+
                   geom_boxplot()+
                   stat_summary(fun.data = stat_box_data, geom = 'text', hjust = 0.5, vjust = 0.9)+
@@ -330,6 +332,7 @@ get_plot<-function(indep.var){
   }
   x_label = case_when(indep.var == "Avalanche_Size_RP" ~ 'Avalanche Size (Relative)',
                       indep.var == "Avalanche_Size_DF" ~ 'Avalanche Size (Destructive)',
+                      indep.var == "Total_in_party_cat_bin" ~ 'Party size',
                       TRUE ~ indep.var
   )
   plt = plt + xlab(x_label)
@@ -350,6 +353,8 @@ ggsave(p9, filename = './plots/figure9.jpg', width = 12, height = 8, dpi = 600, 
 (p10 = get_plot('Avalanche_Size_DF'))
 ggsave(p10, filename = './plots/figure10.jpg', width = 12, height = 8, dpi = 600, scale = 1)
 
+(p30 = get_plot('Total_in_party_cat_bin'))
+ggsave(p30, filename = './plots/figure30.jpg', width = 8, height = 10, dpi = 600, scale = 1)
 
 ```
 
@@ -557,6 +562,57 @@ Does not look like there are statistical  differences
 1. Based on the results I would inclined toward Preparedness score 3 and one-way anova result and present the two-way anova result as sanity check. 
 2. Analysis on burial time is still incomlete. I would spend couple of hours next weekend to do something more. 
 3. Please send me specifict questions (I think we have already discussed some, please remind me). Specific questions will be very helpful for me when I analyze the data. 
+
+
+## Analysis after edit
+
+### Preparedness 4 / Model 2
+Bartlett test (p-value = 0.20) did not suggest violation of homogeneity of variance assumption while the Fligner-Killeen test did (p-value = 0.024). We fit a classical ANOVA and Welch's ANOVA model. 
+
+#### Classical ANOVA
+
+```{r}
+aov4<-aov(Preparedness4~Tourer * Total_in_party_cat_bin, data = dat)
+summary(aov4)
+```
+
+### Welch's ANOVA
+
+```{r}
+oneway.test(Preparedness4~Tourer * Total_in_party_cat_bin, data = dat)
+```
+
+Both of the models concluded that the preparedness score (Model2) differs significantly between the tourer groups (classical ANOVA p-value = $7.34\times 10^{-13}$, Welch's p-value = $1.49\times 10^{-9}$).  
+### Tucky HSD post-hoc analysis 
+
+```{r results='asis'}
+prep.aov = aov(Preparedness4 ~ Tourer, data = dat)
+print(xtable(TukeyHSD(prep.aov)$Tourer, display = c('s','f','f','f','g')),math.style.exponents = T)
+```
+
+
+Tucky HSD test reveals that every tourer groups has significantly different preparedness from each other.
+
+## Post-hoc analysis for other preparedness scores
+
+```{r results='asis'}
+prep.aov = aov(Preparedness1 ~ Tourer, data = dat)
+print(xtable(TukeyHSD(prep.aov)$Tourer, display = c('s','f','f','f','g')),math.style.exponents = T)
+```
+
+Comment: We don't have enough evidence to conclude significant difference in preparedness(1) between Snowmobile and sidecountry. There is strong evidence to conclude that ski vs sidecountry and snowmobil vs ski are significantly different. 
+
+No post-hoc test is done for Preparedness2 as the ANOVA concluded no significant difference.
+
+```{r results='asis'}
+prep.aov = aov(Preparedness3 ~ Tourer, data = dat)
+print(xtable(TukeyHSD(prep.aov)$Tourer, display = c('s','f','f','f','g')),math.style.exponents = T)
+```
+
+Ski vs sidecountry - significant 
+Snowmobile vs sidecountry - significant
+snowmobile vs ski - we don't have evidence to conclude significant difference
+
 
 
 
