@@ -3,9 +3,9 @@ title: "Avalanche"
 author: "Subrata Paul"
 date: "1/23/2021"
 output:
-  word_document: default
   pdf_document:
     extra_dependencies: xcolor
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -411,11 +411,21 @@ n_fun <-function(x){
   return(data.frame(y = 12, label = paste0('Mean = ', round(mean(x),2))))
 }
 
+sd_fun<-function(x){
+  return(data.frame(y = 11, label = paste0('SD = ', round(sd(x),2))))
+}
+
 oneway.test(Total_in_party ~ Tourer, data = dat)
+
+#dat%>%group_by(Tourer)%>%
+#  summarise(mean = mean(Total_in_party), sd = sd(Total_in_party))%>%
+#  select(Tourer, mean, sd)
+
 (p12 = ggplot(data = dat, aes(x = Tourer, y = Total_in_party))+
   geom_boxplot()+ylab('Total in party')+
   stat_summary(fun.y = mean, geom = 'point', shape = 8, size = 4)+
-  stat_summary(fun.data = n_fun, geom = 'text'))
+  stat_summary(fun.data = n_fun, geom = 'text'))+
+  stat_summary(fun.data = sd_fun, geom = 'text')
 ggsave(p12, filename = './plots/figure12.jpg', width = 12, height = 8, dpi = 600, scale = 0.6)
 ```
 
@@ -525,6 +535,9 @@ ggsave(p17, filename = './plots/figure17.jpg', width = 12, height = 8, dpi = 600
 n_fun <-function(x){
   return(data.frame(y = 12, label = paste0('Mean = ', round(mean(x),2))))
 }
+sd_fun<-function(x){
+  return(data.frame(y = 11, label = paste0('SD = ', round(sd(x),2))))
+}
 
 
 dat$Burial_Depth<-as.numeric(dat$Burial_Depth)
@@ -532,7 +545,9 @@ oneway.test(Burial_Depth ~ Tourer, data = dat)
 (p18 = ggplot(data = dat, aes(x = Tourer, y = Burial_Depth))+
   geom_boxplot()+
   stat_summary(fun.y = mean, geom = 'point', shape = 8, size = 4)+
-  stat_summary(fun.data = n_fun, geom = 'text')+ylab('Burial Depth'))
+  stat_summary(fun.data = n_fun, geom = 'text')+
+  stat_summary(fun.data = sd_fun, geom = 'text')+
+    ylab('Burial Depth'))
 ggsave(p18, filename = './plots/figure18.jpg', width = 12, height = 8, dpi = 600, scale = 0.5)
 ```
 
